@@ -5,5 +5,8 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint', '@nuxt/icon', '@nuxtjs/tailwindcss', '@nuxthub/core'],
   hub: {
     database: true
+  },
+  tailwindcss: {
+    cssPath: '~/assets/css/main.css'
   }
 })
