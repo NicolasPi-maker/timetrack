@@ -73,3 +73,19 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## Design chart
+
+App theme is dark-only. Colors are defined as CSS variables in [`app/assets/css/main.css`](app/assets/css/main.css) and exposed as Tailwind classes via [`tailwind.config.ts`](tailwind.config.ts).
+
+| Rôle | Variable | Valeur | Classes Tailwind |
+|---|---|---|---|
+| Fond app | `--color-bg` | `#1c1914` | `bg-bg` |
+| Surface (cards/inputs) | `--color-surface` | `#24201a` | `bg-surface` |
+| Bordure | `--color-border` | `#332d24` | `border-border` |
+| Texte principal | `--color-text` | `#f2ede1` | `text-fg` |
+| Texte facultatif | `--color-text-muted` | `#7a7367` | `text-muted` |
+| Accent / état actif | `--color-accent` | `#ffb000` | `bg-accent`, `text-accent` |
+| Progress bars / graphs | `--color-progress` | `#5eead4` | `bg-progress`, `text-progress` |
+
+`surface` et `border` sont dérivées de `--color-bg` (pas de valeur imposée) — à ajuster si besoin.
