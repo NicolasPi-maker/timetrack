@@ -11,7 +11,7 @@
         v-for="task in tasks"
         :key="task.name"
         class="flex items-center gap-2 p-4 rounded-xl"
-        :class="task.endTime ? '' : 'bg-surface'"
+        :class="task.sessions[0].endTime ? '' : 'bg-surface'"
       >
         <div class="flex-1 flex gap-4 items-center">
           <StatusIndicator :active="!task.endTime" pulsed size="small" />
@@ -31,32 +31,39 @@
 </template>
 
 <script setup lang="ts">
+import type { Task } from "~/interfaces";
 import StatusIndicator from "../shared/StatusIndicator.vue";
 
-const at = (hours: number, minutes: number) => {
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date;
-};
+const tasks = defineModel<Array<Task>>();
 
-// simule la forme des données telles qu'elles arriveront de la base (colonnes `text`)
-const tasks = [
-  {
-    name: "Dev backend",
-    startTime: at(15, 20),
-    endTime: null,
-  },
-  {
-    name: "Réunion équipe",
-    startTime: at(10, 30),
-    endTime: at(11, 15),
-  },
-  {
-    name: "Review PR",
-    startTime: at(9, 50),
-    endTime: at(10, 25),
-  },
-];
+const displayedTasks = computed<
+  Array<{
+    name: string;
+    startTime: Date;
+    endTime: Date | null;
+    active: boolean;
+  }>
+>(() => {
+  let arr = <any>[];
+
+  if (tasks.value) {
+    arr = tasks.value.map((task) => {
+      const lastSession =
+        task.sessions.length > 0
+          ? task.sessions[task.sessions.length - 1]
+          : null;
+
+      return {
+        name: task.name,
+        startTime: lastSession?.startTime,
+        endTime: lastSession?.endTime,
+        active: !!lastSession?.endTime,
+      };
+    });
+  }
+
+  return arr;
+});
 
 const formatTime = (date: Date) =>
   date.toLocaleTimeString("fr-FR", {
