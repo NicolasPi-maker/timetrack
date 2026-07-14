@@ -2,8 +2,8 @@
   <div
     class="rounded-full indicator relative"
     :class="[
-      pulsed ? 'pulsed' : '',
       active ? 'bg-accent' : 'bg-inactive',
+      pulsed ? 'pulsed' : '',
       applySize(size),
     ]"
   ></div>
@@ -57,7 +57,6 @@ const applySize = (size: string) => {
   animation: pulse 1s ease-in infinite;
   transform-origin: center;
   opacity: 20%;
-  z-index: -1;
 }
 
 @keyframes pulse {

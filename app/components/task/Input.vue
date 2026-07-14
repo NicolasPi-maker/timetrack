@@ -8,6 +8,7 @@
           type="text"
           class="flex-1 border-0 bg-transparent outline-0 px-1"
           @keyup.enter="handleEnterKeyPress(text)"
+          @keydown.tab.prevent="handleTabKeyPress"
         />
       </div>
       <small class="text-sm text-muted">
@@ -18,6 +19,40 @@
 </template>
 
 <script setup lang="ts">
+import type { Task } from '~/interfaces';
+
+const props = defineProps<{
+  tasks: Task[];
+}>();
+
+const taskNames = computed(() => {
+  return props.tasks.map((task) => task.name);
+});
+
+const getCommonPrefix = (strings: string[]) => {
+  return strings.reduce((prefix, str) => {
+    let i = 0;
+    while (i < prefix.length && str[i] === prefix[i]) i++;
+    return prefix.slice(0, i);
+  });
+};
+
+const handleTabKeyPress = () => {
+  const match = text.value.match(/^([^"]*")(.*)$/);
+  if (!match) return;
+
+  const [, prefix = "", fragment = ""] = match;
+  const matchingTasks = taskNames.value.filter((name) => startsWithIgnoreCase(name, fragment));
+  if (matchingTasks.length === 0) return;
+
+  if (matchingTasks.length === 1) {
+    text.value = `${prefix}${matchingTasks[0]}"`;
+    return;
+  }
+
+  text.value = `${prefix}${getCommonPrefix(matchingTasks)}`;
+};
+
 const text = ref("");
 
 const getCommand = (str: string) => {
@@ -50,6 +85,9 @@ const handleEnterKeyPress = (text: string) => {
     case "stop":
       emit("stop", task);
       break;
+    case "remove":
+      emit("remove", task);
+      break;
     default:
       error.value = "Invalid command";
       break;
@@ -59,6 +97,7 @@ const handleEnterKeyPress = (text: string) => {
 const emit = defineEmits({
   start: (task) => task,
   stop: (task) => task,
+  remove: (task) => task
 });
 </script>
 

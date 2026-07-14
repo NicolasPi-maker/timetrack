@@ -1,11 +1,7 @@
-import { drizzle } from 'drizzle-orm/d1'
-import * as schema from '../database/schema'
-
-export { schema }
-
-export function useDrizzle() {
-  return drizzle(hubDatabase(), { schema })
-}
+import type * as schema from '../db/schema'
 
 export type TimeEntry = typeof schema.timeEntries.$inferSelect
 export type NewTimeEntry = typeof schema.timeEntries.$inferInsert
+
+export type TaskRow = typeof schema.tasks.$inferSelect
+export type NewTaskRow = typeof schema.tasks.$inferInsert

@@ -1,63 +1,69 @@
 <template>
   <div>
-    <TaskInput @start="handleStart" @stop="handleStop" />
-    <TaskDaily v-model="tasks" />
+    <TaskInput :tasks="tasks" @start="handleStart" @stop="handleStop" @remove="handleRemove" />
+    <TaskIdleCat v-if="!activeTask" />
+    <TaskDaily :tasks="tasks" @set-active="handleStart($event)" />
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Session, Task } from "~/interfaces";
 
-const at = (hours: number, minutes: number) => {
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date;
-};
+interface TaskDto {
+  id: string;
+  name: string;
+  sessions: { startTime: string; endTime: string | null }[];
+}
 
-// simule la forme des données telles qu'elles arriveront de la base
-const tasks = ref<Task[]>([
-  {
-    name: "Dev backend",
-    sessions: [{ startTime: at(15, 20), endTime: null }],
-  },
-  {
-    name: "Réunion équipe",
-    sessions: [{ startTime: at(10, 30), endTime: at(11, 15) }],
-  },
-  {
-    name: "Review PR",
-    sessions: [{ startTime: at(9, 50), endTime: at(10, 25) }],
-  },
-]);
+const { data } = await useFetch<TaskDto[]>("/api/tasks");
+
+const tasks = computed<Task[]>(() =>
+  (data.value ?? []).map((task) => ({
+    id: task.id,
+    name: task.name,
+    sessions: task.sessions.map((session) => ({
+      startTime: new Date(session.startTime),
+      endTime: session.endTime ? new Date(session.endTime) : null,
+    })),
+  }))
+);
 
 const isSessionActive = (session: Session) => session.endTime === null;
 
-const handleStart = (taskName: string) => {
-  const task = tasks.value.find((t) => t.name === taskName);
+const activeTask = computed(() => findActiveTask(tasks.value));
 
-  if (!task) {
-    tasks.value.push({
-      name: taskName,
-      sessions: [{ startTime: new Date(), endTime: null }],
-    });
-    return;
-  }
-
-  const lastSession = task.sessions.at(-1);
-  if (lastSession && isSessionActive(lastSession)) return;
-
-  task.sessions.push({ startTime: new Date(), endTime: null });
+const findActiveTask = (tasks: Array<Task>) => {
+  return tasks.find((task) => {
+    const lastSession = task.sessions.at(-1);
+    return lastSession && isSessionActive(lastSession);
+  });
 };
 
-const handleStop = (taskName: string) => {
-  const task = tasks.value.find((t) => t.name === taskName);
-  if (!task) return;
-
-  const lastSession = task.sessions.at(-1);
-  if (!lastSession || !isSessionActive(lastSession)) return;
-
-  lastSession.endTime = new Date();
+const upsertTask = (task: TaskDto) => {
+  const list = data.value ?? [];
+  const index = list.findIndex((t) => t.id === task.id);
+  data.value = index === -1 ? [...list, task] : list.map((t, i) => (i === index ? task : t));
 };
+
+const handleStart = async (taskName: string) => {
+  const active = findActiveTask(tasks.value);
+  if (active && equalsIgnoreCase(active.name, taskName)) return handleStop(taskName);
+  if (active) await handleStop(active.name);
+
+  const updated = await $fetch<TaskDto>("/api/tasks/start", { method: "POST", body: { name: taskName } });
+  upsertTask(updated);
+};
+
+const handleStop = async (taskName: string) => {
+  const updated = await $fetch<TaskDto>("/api/tasks/stop", { method: "POST", body: { name: taskName } });
+  upsertTask(updated);
+};
+
+const handleRemove = async (taskName: string) => {
+  const { id } = await $fetch<{ id: string }>("/api/tasks/remove", { method: "POST", body: { name: taskName } });
+  data.value = (data.value ?? []).filter((t) => t.id !== id);
+};
+
 </script>
 
 <style scoped></style>

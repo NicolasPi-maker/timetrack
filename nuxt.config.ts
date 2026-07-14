@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxt/eslint", "@nuxt/icon", "@nuxthub/core"],
   hub: {
-    database: true,
+    db: 'sqlite'
   },
   css: ["./app/assets/css/main.css"],
   vite: {
