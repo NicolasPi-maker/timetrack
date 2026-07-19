@@ -7,7 +7,7 @@
 
         <div class="flex flex-col gap-1">
             <p :class="active ? 'text-accent' : ''" class="self-end">
-                {{ getTotalDuration(task.sessions) }}
+                {{ formatDurationFromMinutes(getTotalDuration(task.sessions)) }}
             </p>
             <p class="hidden md:flex items-center gap-1" :class="active ? 'text-accent' : ''">
                 {{ formatTime(lastSession.startTime)}}  

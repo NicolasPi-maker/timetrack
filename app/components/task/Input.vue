@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 border-b">
+  <div class="px-6 py-4  border-b">
     <fieldset class="flex flex-col gap-2">
       <div class="flex items-center">
         <span class="text-accent font-bold text-xl mr-2">></span>
@@ -88,6 +88,9 @@ const handleEnterKeyPress = (text: string) => {
     case "remove":
       emit("remove", task);
       break;
+    case "break":
+      emit("break");
+      break;
     default:
       error.value = "Invalid command";
       break;
@@ -97,7 +100,8 @@ const handleEnterKeyPress = (text: string) => {
 const emit = defineEmits({
   start: (task) => task,
   stop: (task) => task,
-  remove: (task) => task
+  remove: (task) => task,
+  break: () => true,
 });
 </script>
 

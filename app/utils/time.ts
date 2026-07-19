@@ -21,8 +21,15 @@ export const formatDurationFromMinutes = (minutes: number) => {
 };
 
 export const getTotalDuration = (sessions: Session[]) => {
-  const totalMinutes = sessions.reduce((acc, session) => {
+  return sessions.reduce((acc, session) => {
     return acc + getTimeDiffInMinutes(session.startTime, session.endTime ?? new Date());
   }, 0);
-  return formatDurationFromMinutes(totalMinutes);
+};
+
+export const formatDay = (date: Date) => {
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
 };
